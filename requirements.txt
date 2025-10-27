@@ -1,1 +1,2 @@
 pytest
+cd biblio_escolar_trabajofinal
