@@ -4,4 +4,8 @@ modificar user.
 Poder agregar una foto del libro. 
 Graficas de libros que se prestan mas y menos Matplob.
 
+COLOR BIBLIOTECA
+Agrega foto o algo color.
 
+URGENTE
+Fix, devolver libro de otro user.
