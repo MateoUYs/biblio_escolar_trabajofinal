@@ -1,6 +1,12 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from data.base_datos import obtener_prestamos, obtener_usuarios, obtener_libros, registrar_prestamo, cerrar_prestamo
+from data.base_datos import (
+    obtener_prestamos,
+    obtener_usuarios,
+    obtener_libros,
+    registrar_prestamo,
+    cerrar_prestamo
+)
 
 class TablaPrestamos:
     def __init__(self, root):
@@ -17,26 +23,20 @@ class TablaPrestamos:
         # Usuario
         ttk.Label(frame_form, text="Usuario:").grid(row=0, column=0, padx=5, pady=5)
         self.var_usuario = tk.StringVar()
-        usuarios = obtener_usuarios()
-        if usuarios:
-            opciones_usuarios = [f"{u['id']} - {u['nombre']}" for u in usuarios]
-            self.var_usuario.set(opciones_usuarios[0])
-            ttk.OptionMenu(frame_form, self.var_usuario, *opciones_usuarios).grid(row=0, column=1, padx=5, pady=5)
-        else:
-            ttk.Label(frame_form, text="⚠ No hay usuarios cargados").grid(row=0, column=1)
+        self.menu_usuarios = None
+        self.cargar_usuarios(frame_form)
 
         # Libro
         ttk.Label(frame_form, text="Libro:").grid(row=0, column=2, padx=5, pady=5)
         self.var_libro = tk.StringVar()
-        libros = obtener_libros()
-        disponibles = [f"{l['isbn']} - {l['titulo']}" for l in libros if l['disponible'] == 1]
-        if disponibles:
-            self.var_libro.set(disponibles[0])
-            ttk.OptionMenu(frame_form, self.var_libro, *disponibles).grid(row=0, column=3, padx=5, pady=5)
-        else:
-            ttk.Label(frame_form, text="⚠ No hay libros disponibles").grid(row=0, column=3)
+        self.menu_libros = None
+        self.cargar_libros(frame_form)
 
-        ttk.Button(frame_form, text="Registrar Préstamo", command=self.registrar_prestamo).grid(row=0, column=4, padx=10, pady=5)
+        ttk.Button(
+            frame_form,
+            text="Registrar Préstamo",
+            command=self.registrar_prestamo
+        ).grid(row=0, column=4, padx=10, pady=5)
 
         # ==========================
         # TABLA DE PRÉSTAMOS
@@ -63,7 +63,35 @@ class TablaPrestamos:
         self.cargar_prestamos()
 
     # ==========================
-    # FUNCIONES
+    # FUNCIONES AUXILIARES
+    # ==========================
+
+    def cargar_usuarios(self, frame_form):
+        usuarios = obtener_usuarios()
+        if usuarios:
+            opciones_usuarios = [f"{u['id']} - {u['nombre']}" for u in usuarios]
+            self.var_usuario.set("")  # No se selecciona nada por defecto
+            if self.menu_usuarios:
+                self.menu_usuarios.destroy()
+            self.menu_usuarios = ttk.OptionMenu(frame_form, self.var_usuario, "", *opciones_usuarios)
+            self.menu_usuarios.grid(row=0, column=1, padx=5, pady=5)
+        else:
+            ttk.Label(frame_form, text="⚠ No hay usuarios cargados").grid(row=0, column=1)
+
+    def cargar_libros(self, frame_form):
+        libros = obtener_libros()
+        disponibles = [f"{l['isbn']} - {l['titulo']}" for l in libros if l['disponible'] == 1]
+        if disponibles:
+            self.var_libro.set("")  # No se selecciona nada por defecto
+            if self.menu_libros:
+                self.menu_libros.destroy()
+            self.menu_libros = ttk.OptionMenu(frame_form, self.var_libro, "", *disponibles)
+            self.menu_libros.grid(row=0, column=3, padx=5, pady=5)
+        else:
+            ttk.Label(frame_form, text="⚠ No hay libros disponibles").grid(row=0, column=3)
+
+    # ==========================
+    # FUNCIONES PRINCIPALES
     # ==========================
 
     def cargar_prestamos(self):
@@ -82,6 +110,9 @@ class TablaPrestamos:
                 p['fecha_devolucion'] if p['fecha_devolucion'] else "—"
             ))
 
+        # 🔄 Actualizar combobox de libros después de registrar préstamos
+        self.cargar_libros(self.menu_libros.master)
+
     def registrar_prestamo(self):
         usuario_str = self.var_usuario.get()
         libro_str = self.var_libro.get()
@@ -96,6 +127,9 @@ class TablaPrestamos:
         exito = registrar_prestamo(isbn, usuario_id)
         if exito:
             messagebox.showinfo("Éxito", "Préstamo registrado correctamente.")
+            # Limpiar selección para permitir volver a elegir otro
+            self.var_usuario.set("")
+            self.var_libro.set("")
             self.cargar_prestamos()
         else:
             messagebox.showerror("Error", "No se pudo registrar el préstamo.")

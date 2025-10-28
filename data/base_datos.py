@@ -1,10 +1,11 @@
 import sqlite3
 from datetime import datetime
 
-# Conexión y creación de tablas
+# ===================== CONEXIÓN Y TABLAS ======================
+
 def conectar():
     conn = sqlite3.connect('biblioteca.db')
-    # Tabla Libros (ya existente)
+    # Tabla Libros
     conn.execute('''
         CREATE TABLE IF NOT EXISTS libros (
             isbn TEXT PRIMARY KEY,
@@ -14,7 +15,6 @@ def conectar():
             disponible INTEGER DEFAULT 1
         )
     ''')
-
     # Tabla Usuarios
     conn.execute('''
         CREATE TABLE IF NOT EXISTS usuarios (
@@ -23,7 +23,6 @@ def conectar():
             tipo TEXT NOT NULL
         )
     ''')
-
     # Tabla Préstamos
     conn.execute('''
         CREATE TABLE IF NOT EXISTS prestamos (
@@ -37,6 +36,29 @@ def conectar():
         )
     ''')
     return conn
+
+# ===================== LIBROS ======================
+
+def agregar_libro(libro):
+    """Agrega un libro a la base de datos"""
+    conn = conectar()
+    try:
+        conn.execute(
+            "INSERT INTO libros (isbn, titulo, autor, genero, disponible) VALUES (?, ?, ?, ?, ?)",
+            (libro.isbn, libro.titulo, libro.autor, libro.genero, 1 if libro.disponible else 0)
+        )
+        conn.commit()
+    except sqlite3.IntegrityError:
+        print(f"⚠️ El libro con ISBN {libro.isbn} ya existe.")
+    finally:
+        conn.close()
+
+def obtener_libros():
+    conn = conectar()
+    cursor = conn.execute("SELECT * FROM libros")
+    libros = [dict(zip(['isbn', 'titulo', 'autor', 'genero', 'disponible'], row)) for row in cursor.fetchall()]
+    conn.close()
+    return libros
 
 # ===================== USUARIOS ======================
 
@@ -60,25 +82,21 @@ def obtener_usuarios():
     conn.close()
     return usuarios
 
-# ===================== PRESTAMOS ======================
+# ===================== PRÉSTAMOS ======================
 
 def registrar_prestamo(isbn, usuario_id):
     conn = conectar()
     fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     try:
-        # Verificar que el libro esté disponible
         disponible = conn.execute("SELECT disponible FROM libros WHERE isbn=?", (isbn,)).fetchone()
         if not disponible or disponible[0] == 0:
             print("⚠️ El libro no está disponible.")
             return False
 
-        # Registrar préstamo
         conn.execute(
             "INSERT INTO prestamos (isbn, usuario_id, fecha_prestamo) VALUES (?, ?, ?)",
             (isbn, usuario_id, fecha)
         )
-
-        # Marcar libro como no disponible
         conn.execute("UPDATE libros SET disponible=0 WHERE isbn=?", (isbn,))
         conn.commit()
         return True
@@ -89,19 +107,12 @@ def cerrar_prestamo(prestamo_id):
     conn = conectar()
     fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     try:
-        # Obtener ISBN
         isbn = conn.execute("SELECT isbn FROM prestamos WHERE id=?", (prestamo_id,)).fetchone()
         if not isbn:
             print("⚠️ Préstamo no encontrado.")
             return False
 
-        # Actualizar fecha de devolución
-        conn.execute(
-            "UPDATE prestamos SET fecha_devolucion=? WHERE id=?",
-            (fecha, prestamo_id)
-        )
-
-        # Marcar libro como disponible
+        conn.execute("UPDATE prestamos SET fecha_devolucion=? WHERE id=?", (fecha, prestamo_id))
         conn.execute("UPDATE libros SET disponible=1 WHERE isbn=?", (isbn[0],))
         conn.commit()
         return True
@@ -123,21 +134,3 @@ def obtener_prestamos():
     ]
     conn.close()
     return prestamos
-
-def cerrar_prestamo(prestamo_id):
-    import sqlite3
-    from datetime import datetime
-
-    conn = conectar()
-    fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    try:
-        isbn = conn.execute("SELECT isbn FROM prestamos WHERE id=?", (prestamo_id,)).fetchone()
-        if not isbn:
-            return False
-
-        conn.execute("UPDATE prestamos SET fecha_devolucion=? WHERE id=?", (fecha, prestamo_id))
-        conn.execute("UPDATE libros SET disponible=1 WHERE isbn=?", (isbn[0],))
-        conn.commit()
-        return True
-    finally:
-        conn.close()
