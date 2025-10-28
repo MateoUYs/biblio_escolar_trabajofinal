@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 from ui.formulario_libro import FormularioLibro
 from data.base_datos import obtener_libros
+from ui.tabla_prestamos import TablaPrestamos
+
 
 class VentanaPrincipal:
     def __init__(self, root):
