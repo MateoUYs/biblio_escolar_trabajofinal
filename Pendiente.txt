@@ -1,0 +1,7 @@
+Eliminiar libro - funcion de docente.
+Eliminar user - docente,
+modificar user. 
+Poder agregar una foto del libro. 
+Graficas de libros que se prestan mas y menos Matplob.
+
+
