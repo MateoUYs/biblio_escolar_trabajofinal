@@ -1,12 +1,12 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from data.base_datos import obtener_prestamos, obtener_usuarios, obtener_libros, registrar_prestamo
+from data.base_datos import obtener_prestamos, obtener_usuarios, obtener_libros, registrar_prestamo, cerrar_prestamo
 
 class TablaPrestamos:
     def __init__(self, root):
         self.root = root
         self.root.title("Préstamos")
-        self.root.geometry("800x400")
+        self.root.geometry("850x450")
 
         # ==========================
         # FORMULARIO REGISTRAR PRÉSTAMO
@@ -14,7 +14,7 @@ class TablaPrestamos:
         frame_form = ttk.Frame(self.root, padding="10")
         frame_form.pack(fill="x")
 
-        # --- Usuario ---
+        # Usuario
         ttk.Label(frame_form, text="Usuario:").grid(row=0, column=0, padx=5, pady=5)
         self.var_usuario = tk.StringVar()
         usuarios = obtener_usuarios()
@@ -25,7 +25,7 @@ class TablaPrestamos:
         else:
             ttk.Label(frame_form, text="⚠ No hay usuarios cargados").grid(row=0, column=1)
 
-        # --- Libro ---
+        # Libro
         ttk.Label(frame_form, text="Libro:").grid(row=0, column=2, padx=5, pady=5)
         self.var_libro = tk.StringVar()
         libros = obtener_libros()
@@ -36,7 +36,6 @@ class TablaPrestamos:
         else:
             ttk.Label(frame_form, text="⚠ No hay libros disponibles").grid(row=0, column=3)
 
-        # --- Botón ---
         ttk.Button(frame_form, text="Registrar Préstamo", command=self.registrar_prestamo).grid(row=0, column=4, padx=10, pady=5)
 
         # ==========================
@@ -46,12 +45,21 @@ class TablaPrestamos:
         frame_tabla.pack(fill="both", expand=True)
 
         columnas = ("ID", "ISBN", "Título", "Usuario", "Tipo", "Fecha Préstamo", "Fecha Devolución")
-        self.tabla = ttk.Treeview(frame_tabla, columns=columnas, show="headings")
+        self.tabla = ttk.Treeview(frame_tabla, columns=columnas, show="headings", selectmode="browse")
         for col in columnas:
             self.tabla.heading(col, text=col)
-            self.tabla.column(col, width=100, anchor="center")
+            self.tabla.column(col, width=110, anchor="center")
 
         self.tabla.pack(fill="both", expand=True)
+
+        # ==========================
+        # BOTÓN DEVOLVER
+        # ==========================
+        frame_botones = ttk.Frame(self.root, padding="10")
+        frame_botones.pack(fill="x")
+
+        ttk.Button(frame_botones, text="Devolver Préstamo", command=self.devolver_prestamo).pack(side="right")
+
         self.cargar_prestamos()
 
     # ==========================
@@ -59,7 +67,6 @@ class TablaPrestamos:
     # ==========================
 
     def cargar_prestamos(self):
-        """Carga todos los préstamos en la tabla"""
         for item in self.tabla.get_children():
             self.tabla.delete(item)
 
@@ -76,7 +83,6 @@ class TablaPrestamos:
             ))
 
     def registrar_prestamo(self):
-        """Registra un nuevo préstamo en la base de datos"""
         usuario_str = self.var_usuario.get()
         libro_str = self.var_libro.get()
 
@@ -93,3 +99,24 @@ class TablaPrestamos:
             self.cargar_prestamos()
         else:
             messagebox.showerror("Error", "No se pudo registrar el préstamo.")
+
+    def devolver_prestamo(self):
+        selected = self.tabla.focus()
+        if not selected:
+            messagebox.showerror("Error", "Seleccione un préstamo para devolver.")
+            return
+
+        valores = self.tabla.item(selected, "values")
+        prestamo_id = valores[0]
+        fecha_devolucion = valores[6]
+
+        if fecha_devolucion != "—":
+            messagebox.showwarning("Aviso", "Este préstamo ya fue devuelto.")
+            return
+
+        exito = cerrar_prestamo(prestamo_id)
+        if exito:
+            messagebox.showinfo("Éxito", "Préstamo devuelto correctamente.")
+            self.cargar_prestamos()
+        else:
+            messagebox.showerror("Error", "No se pudo devolver el préstamo.")

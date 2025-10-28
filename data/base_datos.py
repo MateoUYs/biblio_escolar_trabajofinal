@@ -123,3 +123,21 @@ def obtener_prestamos():
     ]
     conn.close()
     return prestamos
+
+def cerrar_prestamo(prestamo_id):
+    import sqlite3
+    from datetime import datetime
+
+    conn = conectar()
+    fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        isbn = conn.execute("SELECT isbn FROM prestamos WHERE id=?", (prestamo_id,)).fetchone()
+        if not isbn:
+            return False
+
+        conn.execute("UPDATE prestamos SET fecha_devolucion=? WHERE id=?", (fecha, prestamo_id))
+        conn.execute("UPDATE libros SET disponible=1 WHERE isbn=?", (isbn[0],))
+        conn.commit()
+        return True
+    finally:
+        conn.close()
