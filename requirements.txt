@@ -1,2 +1,11 @@
 pytest
 cd biblio_escolar_trabajofinal
+matplotlib
+
+git init
+git add .
+git commit -m "BiblioEscolar v1.0.0 - UI, SQLite y gráfico por género"
+git tag v1.0.0
+git branch -M main
+git remote add origin https://github.com/tu_usuario/biblio_escolar.git
+git push -u origin main --tags
