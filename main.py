@@ -10,4 +10,4 @@ from ui.ventana_principal import iniciar
 
 if __name__ == "__main__":
     iniciar_tareas_automaticas()
-    iniciar()  # tu función que lanza Tkinter
+    iniciar()  #función que lanza Tkinter

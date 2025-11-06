@@ -37,6 +37,7 @@ class FormLoginDocente:
             return
 
         # OK
-        self.on_login(usuario)   # Notificamos a la ventana principal
+        self.on_login(usuario)   # Notificamos a la ventana princ
         messagebox.showinfo("Sesión iniciada", f"Bienvenido/a {usuario['nombre']} (Docente).")
         self.root.destroy()
+        
