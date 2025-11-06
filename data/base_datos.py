@@ -1,7 +1,16 @@
 import sqlite3
 from datetime import datetime
+from typing import Literal
 
 # ===================== CONEXIÓN Y TABLAS ======================
+
+def eliminar_prestamos_vencidos():
+    conn = conectar()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM prestamos WHERE estado='vencido'")
+    conn.commit()
+    conn.close()
+    print("Préstamos vencidos eliminados automáticamente.")
 
 def conectar():
     conn = sqlite3.connect('biblioteca.db')
