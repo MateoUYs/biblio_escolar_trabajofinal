@@ -182,5 +182,5 @@ La automatización mediante APScheduler promueve la reflexión sobre la eficienc
 
 **Autor:** Mateo Indart Vega, Javier Fernandez.  
 **Instituto:** Instituto de Formación Docente “José Pedro Varela” – Rosario, Uruguay  
-**Versión:** v1.0.0  
+**Versión:** v1.0.2  
 **Licencia:** Uso educativo libre.
