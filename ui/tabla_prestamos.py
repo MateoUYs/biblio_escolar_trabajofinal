@@ -1,4 +1,5 @@
 import tkinter as tk
+import matplotlib.pyplot as plt
 from tkinter import ttk, messagebox
 from data.base_datos import (
     obtener_prestamos,

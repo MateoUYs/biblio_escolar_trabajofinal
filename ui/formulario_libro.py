@@ -1,4 +1,5 @@
 import tkinter as tk
+import matplotlib.pyplot as plt
 from tkinter import messagebox
 from models.libro import Libro
 from data.base_datos import agregar_libro

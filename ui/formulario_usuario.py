@@ -1,4 +1,5 @@
 import tkinter as tk
+import matplotlib.pyplot as plt
 from tkinter import messagebox
 from data.base_datos import agregar_usuario
 
